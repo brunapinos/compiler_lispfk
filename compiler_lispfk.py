@@ -1,4 +1,5 @@
 from getch import getche
+from sidekick import opt
 import click
 import pprint
 import ox
@@ -21,7 +22,7 @@ token_list = [
 
 identity = lambda x: x
 
-parser = ox.make_parser([
+parser = ox.make_parser([   
 
     ('tuple : OPEN_BRACKET elements CLOSE_BRACKET', lambda a, x, b: x),
     ('tuple : OPEN_BRACKET CLOSE_BRACKET', lambda a, b: '[]'),
@@ -41,79 +42,118 @@ breakpoints = []
 
 @click.command()
 @click.argument('source_file',type=click.File('r'))
-def build(source_file):
+@click.option('-o', nargs=1)
+def build(o, source_file):
 
+    output = '%s' % o
     print_ast = pprint.PrettyPrinter(width=60, compact=True)
     source = source_file.read()
 
     tokens = lexer(source)
 
-    tokens = [value for value in tokens if str(value)[:7] != 'COMMENT' and str(value)[:8] != 'NEW_LINE']
+    tokens = [value for value in tokens if str(value)[:7] \
+        != 'COMMENT' and str(value)[:8] != 'NEW_LINE']
     ast = parser(tokens)
 
-    # print_ast.pprint(ast)
-    lf(ast, ptr)
+    #print_ast.pprint(ast)
+    final_code = ''
+    final_code = lf(ast, ptr, final_code)
+
+    exit_arq = open(output, 'w')
+    exit_arq.write(final_code)
+    exit_arq.close()
 
 function_definition = {}
 
-def lf(source, ptr):
+def lf(source, ptr, final_code):
+
+    # variable to make sure that will jump def and while elements
+    # for avoid repetition
+    jump_elements = 0
 
     for command in source:
 
-        if isinstance(command, list):
-            lf(command, ptr)
+        if jump_elements == 0:
 
-        elif command == 'do-after':
-            i = 0
-            while i < len(source[2]):
-                lista = ['do', source[1], source[2][i]]
-                lf(lista, ptr)
-                i += 1
+            if isinstance(command, list):
+                final_code = lf(command, ptr, final_code)
 
-        elif command == 'do-before':
-            i = 0
-            while i < len(source[2]):
-                lista = ['do', source[2][i], source[1]]
-                lf(lista, ptr)
-                i += 1
+            elif command == 'do-after':
+                i = 0
+                while i < len(source[2]):
+                    lista = ['do', source[1], source[2][i]]
+                    final_code = lf(lista, ptr, final_code)
+                    i += 1
 
-        elif command == 'loop':
-            while data[ptr] != 1:
-                lf(source[1:len(source)], ptr)
+            elif command == 'do-before':
+                i = 0
+                while i < len(source[2]):
+                    lista = ['do', source[2][i], source[1]]
+                    final_code = lf(lista, ptr, final_code)
+                    i += 1
 
-        elif command == 'def':
-            function_definition[source[1]] = [source[2], source[3]]
+            elif command == 'loop':
+                final_code = final_code + '['
+                while data[ptr] != 1:
+                    final_code = lf(source[1:len(source)], ptr, final_code)
+                
+                jump_elements = len(source) 
+                final_code = final_code + ']'
 
-        elif command == 'add':
-            data[ptr] = (data[ptr] + int(source[1])) % 256
+            elif command == 'def':
+                function_definition[source[1]] = [source[2], source[3]]
+                jump_elements = len(source)
 
-        elif command == 'sub':
-            data[ptr] = (data[ptr] - int(source[1])) % 256
+            elif command == 'add':
+                final_code = add_func(int(source[1]), final_code)
+                data[ptr] = (data[ptr] + int(source[1])) % 256
 
-        elif command == 'inc':
-            data[ptr] = (data[ptr] + 1) % 256;
+            elif command == 'sub':
+                final_code = sub_func(int(source[1]), final_code)
+                data[ptr] = (data[ptr] - int(source[1])) % 256
 
-        elif command == 'dec':
-            data[ptr] = (data[ptr] - 1) % 256;
+            elif command == 'inc':
+                final_code = final_code + '+'
+                data[ptr] = (data[ptr] + 1) % 256;
 
-        elif command == 'right':
-            ptr += 1
-            if ptr == len(data):
-                data.append(0)
+            elif command == 'dec':
+                final_code = final_code + '-'
+                data[ptr] = (data[ptr] - 1) % 256;
 
-        elif command == 'left':
-            ptr -= 1
+            elif command == 'right':
+                final_code = final_code + '>'
+                ptr += 1
+                if ptr == len(data):
+                    data.append(0)
 
-        elif command == 'print':
-            print(chr(data[ptr]), end='')
+            elif command == 'left':
+                final_code = final_code + '<'
+                ptr -= 1
 
-        elif command == 'read':
-            data[ptr] = ord(getche())
+            elif command == 'print':
+                final_code = final_code + '.'
+                
+            elif command == 'read':
+                final_code = final_code + ','
 
-        elif command in function_definition:
-            lista = function_definition[command][1]
-            lf(lista, ptr)
+            elif command in function_definition:
+                lista = function_definition[command][1]
+                final_code = lf(lista, ptr, final_code)
 
+        else:
+            jump_elements -= 1
+
+    return final_code
+
+def add_func(qt,final_code):
+    for it in range(0,qt):
+        final_code = final_code + '+'
+    return final_code
+
+def sub_func(qt, final_code):
+    for it in range(0,qt):
+        final_code = final_code + '-'
+    return final_code
 
 if __name__ == '__main__':
     build()
