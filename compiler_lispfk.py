@@ -22,7 +22,7 @@ token_list = [
 
 identity = lambda x: x
 
-parser = ox.make_parser([   
+parser = ox.make_parser([
 
     ('tuple : OPEN_BRACKET elements CLOSE_BRACKET', lambda a, x, b: x),
     ('tuple : OPEN_BRACKET CLOSE_BRACKET', lambda a, b: '[]'),
@@ -59,7 +59,7 @@ def build(o, source_file):
     final_code = ''
     final_code = lf(ast, ptr, final_code)
 
-    exit_arq = open(output, 'w')
+    exit_arq = open('output.bf', 'w')
     exit_arq.write(final_code)
     exit_arq.close()
 
@@ -94,10 +94,9 @@ def lf(source, ptr, final_code):
 
             elif command == 'loop':
                 final_code = final_code + '['
-                while data[ptr] != 1:
-                    final_code = lf(source[1:len(source)], ptr, final_code)
-                
-                jump_elements = len(source) 
+                final_code = lf(source[1:len(source)], ptr, final_code)
+
+                jump_elements = len(source)
                 final_code = final_code + ']'
 
             elif command == 'def':
@@ -132,7 +131,7 @@ def lf(source, ptr, final_code):
 
             elif command == 'print':
                 final_code = final_code + '.'
-                
+
             elif command == 'read':
                 final_code = final_code + ','
 
