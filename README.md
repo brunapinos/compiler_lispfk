@@ -17,6 +17,7 @@ Repositório dedicado a implementação de um compilador de LispFuck para BrainF
  * ox
  * click
  * getch
+ * sidekick
 
 Dentro do diretório raiz, execute o seguinte comando:
 
