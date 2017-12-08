@@ -81,14 +81,14 @@ def lf(source, ptr, final_code):
             elif command == 'do-after':
                 i = 0
                 while i < len(source[2]):
-                    lista = ['do', source[1], source[2][i]]
+                    lista = ['do', source[2][i], source[1]]
                     final_code = lf(lista, ptr, final_code)
                     i += 1
 
             elif command == 'do-before':
                 i = 0
                 while i < len(source[2]):
-                    lista = ['do', source[2][i], source[1]]
+                    lista = ['do', source[1], source[2][i]]
                     final_code = lf(lista, ptr, final_code)
                     i += 1
 
@@ -105,29 +105,21 @@ def lf(source, ptr, final_code):
 
             elif command == 'add':
                 final_code = add_func(int(source[1]), final_code)
-                data[ptr] = (data[ptr] + int(source[1])) % 256
 
             elif command == 'sub':
                 final_code = sub_func(int(source[1]), final_code)
-                data[ptr] = (data[ptr] - int(source[1])) % 256
 
             elif command == 'inc':
                 final_code = final_code + '+'
-                data[ptr] = (data[ptr] + 1) % 256;
 
             elif command == 'dec':
                 final_code = final_code + '-'
-                data[ptr] = (data[ptr] - 1) % 256;
 
             elif command == 'right':
                 final_code = final_code + '>'
-                ptr += 1
-                if ptr == len(data):
-                    data.append(0)
 
             elif command == 'left':
                 final_code = final_code + '<'
-                ptr -= 1
 
             elif command == 'print':
                 final_code = final_code + '.'
