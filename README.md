@@ -21,9 +21,9 @@ Repositório dedicado a implementação de um compilador de LispFuck para BrainF
 
 Dentro do diretório raiz, execute o seguinte comando:
 
-    python3 compiler_lispfk.py arquivo.lf
+    python3 compiler_lispfk.py arquivo.lf -o novo_arquivo.bf
 
 Caso queira executar utilizando os exemplos, utilize o seguinte
 comando:
 
-	python3 compiler_lispfk.py exemplos/nome_do_exemplo.lf
+	python3 compiler_lispfk.py exemplos/nome_do_exemplo.lf -o novo_arquivo.bf

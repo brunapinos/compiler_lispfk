@@ -59,7 +59,7 @@ def build(o, source_file):
     final_code = ''
     final_code = lf(ast, ptr, final_code)
 
-    exit_arq = open('output.bf', 'w')
+    exit_arq = open(output, 'w')
     exit_arq.write(final_code)
     exit_arq.close()
 
